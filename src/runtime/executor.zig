@@ -105,7 +105,7 @@ pub const Batch = struct {
 };
 
 pub const Worker = struct {
-    event: std.AutoResetEvent align(EVENT_ALIGN) = std.AutoResetEvent{},
+    event: std.Thread.AutoResetEvent align(EVENT_ALIGN) = std.Thread.AutoResetEvent{},
     run_queue_lifo: Atomic(?*Task) = Atomic(?*Task).init(null),
     run_queue_overflow: UnboundedTaskQueue = undefined,
     run_queue: BoundedTaskQueue = undefined,
@@ -120,7 +120,7 @@ pub const Worker = struct {
 
     const EVENT_ALIGN = std.math.max(
         ~Scheduler.IDLE_WAITING + 1,
-        @alignOf(std.AutoResetEvent),
+        @alignOf(std.Thread.AutoResetEvent),
     );
 
     threadlocal var tls_current: ?*Worker = null;
@@ -129,8 +129,8 @@ pub const Worker = struct {
         const Spawner = struct {
             scheduler: *Scheduler,
             thread: *std.Thread = undefined,
-            thread_event: std.AutoResetEvent = std.AutoResetEvent{},
-            spawn_event: std.AutoResetEvent = std.AutoResetEvent{},
+            thread_event: std.Thread.AutoResetEvent = std.Thread.AutoResetEvent{},
+            spawn_event: std.Thread.AutoResetEvent = std.Thread.AutoResetEvent{},
 
             fn entry(self: *@This()) void {
                 self.thread_event.wait();
